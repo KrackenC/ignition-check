@@ -2,7 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<meta name="ignition-check-version" content="17">
+<meta name="ignition-check-version" content="18">
 </head><body>
 <title>Ignition Check</title>
 <style>
@@ -71,48 +71,50 @@ body[data-view="ignition"] .tabs button {
   font-family: 'Titillium Web', 'Segoe UI', system-ui, sans-serif;
   letter-spacing: 0.08em;
 }
-body[data-view="ignition"] .tabs button:hover { color: #c93214; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ignition"] .tabs button:hover { color: #ff5a3c; } }
-:root[data-theme="dark"] body[data-view="ignition"] .tabs button:hover { color: #ff5a3c; }
+body[data-view="ignition"] .tabs button:hover { color: #1e4d8c; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ignition"] .tabs button:hover { color: #4c85e0; } }
+:root[data-theme="dark"] body[data-view="ignition"] .tabs button:hover { color: #4c85e0; }
 body[data-view="ignition"] .tabs button[aria-selected="true"] {
-  background: #c93214;
+  background: linear-gradient(165deg, #4a7fc4 0%, #1e4d8c 60%, #163a68 100%);
   color: #ffffff;
 }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ignition"] .tabs button[aria-selected="true"] { background: #ff5a3c; color: #1c0500; } }
-:root[data-theme="dark"] body[data-view="ignition"] .tabs button[aria-selected="true"] { background: #ff5a3c; color: #1c0500; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ignition"] .tabs button[aria-selected="true"] { background: linear-gradient(165deg, #8fb6ef 0%, #4c85e0 60%, #3568b8 100%); color: #06131f; } }
+:root[data-theme="dark"] body[data-view="ignition"] .tabs button[aria-selected="true"] { background: linear-gradient(165deg, #8fb6ef 0%, #4c85e0 60%, #3568b8 100%); color: #06131f; }
 
 .view[hidden] { display: none; }
 
-body[data-view="ignition"] { background: #eef0f3; }
-@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ignition"] { background: #0a0d12; } }
-:root[data-theme="dark"] body[data-view="ignition"] { background: #0a0d12; }
+body[data-view="ignition"] { background: #e8edf1; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ignition"] { background: #090d12; } }
+:root[data-theme="dark"] body[data-view="ignition"] { background: #090d12; }
 body[data-view="ledger"] { background: #e9ecf1; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ledger"] { background: #0d1015; } }
 :root[data-theme="dark"] body[data-view="ledger"] { background: #0d1015; }
 
 /* ---------------------------------------------- Ignition Check (scoped) */
 #view-ignition {
-    --bg: #eef0f3;
-    --grid: rgba(20,30,45,0.04);
-    --surface: linear-gradient(180deg, #fcfcfd 0%, #eef0f3 45%, #e1e4e8 100%);
-    --surface-2: #e6e9ee;
-    --metal-hi: rgba(255,255,255,0.85);
-    --metal-lo: rgba(15,25,35,0.14);
-    --accent-metal: linear-gradient(180deg, #e0491f 0%, #c93214 55%, #9c2810 100%);
-    --accent2-metal: linear-gradient(180deg, #144da8 0%, #0b3d91 55%, #072a66 100%);
-    --ink: #10151c;
-    --ink-dim: #4a5568;
-    --ink-faint: #7c8793;
-    --line: #d7dce2;
-    --line-strong: #b7c0ca;
-    --accent: #c93214;
-    --accent-hover: #a82710;
+    --bg: #e8edf1;
+    --grid: rgba(30,50,75,0.045);
+    --surface: linear-gradient(180deg, #fdfdfe 0%, #eef1f4 32%, #dfe5ea 68%, #d2dae1 100%);
+    --surface-2: #dde3e9;
+    --metal-hi: rgba(255,255,255,0.9);
+    --metal-lo: rgba(13,24,38,0.16);
+    --accent-metal: linear-gradient(165deg, #4a7fc4 0%, #1e4d8c 45%, #163a68 80%, #102a4d 100%);
+    --accent2-metal: linear-gradient(165deg, #8695a8 0%, #5c6f85 45%, #445465 80%, #333f4d 100%);
+    --good-metal: linear-gradient(165deg, #3cb479 0%, #1a7f4b 45%, #145f38 80%, #0e4728 100%);
+    --ink: #101820;
+    --ink-dim: #47566a;
+    --ink-faint: #7c8ea3;
+    --line: #cdd6de;
+    --line-strong: #aab7c3;
+    --accent: #1e4d8c;
+    --accent-hover: #163a68;
     --accent-ink: #ffffff;
-    --accent-wash: rgba(201,50,20,0.08);
-    --accent2: #0b3d91;
-    --accent2-hover: #093073;
-    --accent2-wash: rgba(11,61,145,0.08);
+    --accent-wash: rgba(30,77,140,0.09);
+    --accent2: #55677d;
+    --accent2-hover: #435264;
+    --accent2-wash: rgba(85,103,125,0.10);
     --good: #1a7f4b;
+    --good-hover: #145f38;
     --good-bg: #e3f3ea;
     --good-line: #bfe0cd;
     --skill-beginner: #2569a6;
@@ -121,7 +123,7 @@ body[data-view="ledger"] { background: #e9ecf1; }
     --skill-intermediate-bg: #f5ecd6;
     --skill-advanced: #a13a3a;
     --skill-advanced-bg: #f6e0e0;
-    --shadow: 0 1px 2px rgba(15,25,35,0.06), 0 6px 16px -10px rgba(15,25,35,0.14);
+    --shadow: 0 1px 2px rgba(13,24,38,0.07), 0 4px 10px -6px rgba(13,24,38,0.12), 0 16px 32px -18px rgba(13,24,38,0.22);
     --font-display: 'Titillium Web', 'Segoe UI', system-ui, sans-serif;
     --font-placard: 'Titillium Web', 'Segoe UI', system-ui, sans-serif;
     --font-body: 'Titillium Web', 'Segoe UI', system-ui, sans-serif;
@@ -129,28 +131,30 @@ body[data-view="ledger"] { background: #e9ecf1; }
   }
 @media (prefers-color-scheme: dark) {
 :root:not([data-theme="light"]) #view-ignition {
-      --bg: #0a0d12;
-      --grid: rgba(150,180,210,0.035);
-      --surface: linear-gradient(180deg, #262b33 0%, #1b1f26 45%, #121519 100%);
-      --surface-2: #191f28;
-      --metal-hi: rgba(255,255,255,0.07);
-      --metal-lo: rgba(0,0,0,0.5);
-      --accent-metal: linear-gradient(180deg, #ff8663 0%, #ff5a3c 55%, #cc3f26 100%);
-      --accent2-metal: linear-gradient(180deg, #7aabff 0%, #4d8fff 55%, #2f66cc 100%);
-      --ink: #e7ecf2;
-      --ink-dim: #96a3b3;
-      --ink-faint: #5f6b78;
-      --line: #232b35;
-      --line-strong: #313b47;
-      --accent: #ff5a3c;
-      --accent-hover: #ff7a5c;
-      --accent-ink: #1c0500;
-      --accent-wash: rgba(255,90,60,0.14);
-      --accent2: #4d8fff;
-      --accent2-hover: #77a8ff;
-      --accent2-wash: rgba(77,143,255,0.14);
-      --good: #35c374;
-      --good-bg: #103322;
+      --bg: #090d12;
+      --grid: rgba(140,170,205,0.04);
+      --surface: linear-gradient(180deg, #262e38 0%, #1b222b 32%, #141a21 68%, #0e1318 100%);
+      --surface-2: #171d25;
+      --metal-hi: rgba(255,255,255,0.08);
+      --metal-lo: rgba(0,0,0,0.55);
+      --accent-metal: linear-gradient(165deg, #8fb6ef 0%, #4c85e0 45%, #3568b8 80%, #234a8a 100%);
+      --accent2-metal: linear-gradient(165deg, #b6c2d1 0%, #8695a8 45%, #6a7889 80%, #525f6e 100%);
+      --good-metal: linear-gradient(165deg, #77e0a8 0%, #34c377 45%, #219c5c 80%, #167545 100%);
+      --ink: #e6ecf2;
+      --ink-dim: #91a1b4;
+      --ink-faint: #5c6c7f;
+      --line: #202a34;
+      --line-strong: #2c3846;
+      --accent: #4c85e0;
+      --accent-hover: #6a9de8;
+      --accent-ink: #06131f;
+      --accent-wash: rgba(76,133,224,0.16);
+      --accent2: #8695a8;
+      --accent2-hover: #a0adbe;
+      --accent2-wash: rgba(134,149,168,0.16);
+      --good: #34c377;
+      --good-hover: #26a862;
+      --good-bg: #0f3322;
       --good-line: #1f5c3c;
       --skill-beginner: #6ab6f2;
       --skill-beginner-bg: #12283c;
@@ -158,32 +162,34 @@ body[data-view="ledger"] { background: #e9ecf1; }
       --skill-intermediate-bg: #332711;
       --skill-advanced: #ef8f8f;
       --skill-advanced-bg: #331b1b;
-      --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 24px -14px rgba(0,0,0,0.6);
+      --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 6px 14px -8px rgba(0,0,0,0.5), 0 20px 40px -20px rgba(0,0,0,0.7);
     }
 }
 :root[data-theme="dark"] #view-ignition {
-    --bg: #0a0d12;
-    --grid: rgba(150,180,210,0.035);
-    --surface: linear-gradient(180deg, #262b33 0%, #1b1f26 45%, #121519 100%);
-    --surface-2: #191f28;
-    --metal-hi: rgba(255,255,255,0.07);
-    --metal-lo: rgba(0,0,0,0.5);
-    --accent-metal: linear-gradient(180deg, #ff8663 0%, #ff5a3c 55%, #cc3f26 100%);
-    --accent2-metal: linear-gradient(180deg, #7aabff 0%, #4d8fff 55%, #2f66cc 100%);
-    --ink: #e7ecf2;
-    --ink-dim: #96a3b3;
-    --ink-faint: #5f6b78;
-    --line: #232b35;
-    --line-strong: #313b47;
-    --accent: #ff5a3c;
-    --accent-hover: #ff7a5c;
-    --accent-ink: #1c0500;
-    --accent-wash: rgba(255,90,60,0.14);
-    --accent2: #4d8fff;
-    --accent2-hover: #77a8ff;
-    --accent2-wash: rgba(77,143,255,0.14);
-    --good: #35c374;
-    --good-bg: #103322;
+    --bg: #090d12;
+    --grid: rgba(140,170,205,0.04);
+    --surface: linear-gradient(180deg, #262e38 0%, #1b222b 32%, #141a21 68%, #0e1318 100%);
+    --surface-2: #171d25;
+    --metal-hi: rgba(255,255,255,0.08);
+    --metal-lo: rgba(0,0,0,0.55);
+    --accent-metal: linear-gradient(165deg, #8fb6ef 0%, #4c85e0 45%, #3568b8 80%, #234a8a 100%);
+    --accent2-metal: linear-gradient(165deg, #b6c2d1 0%, #8695a8 45%, #6a7889 80%, #525f6e 100%);
+    --good-metal: linear-gradient(165deg, #77e0a8 0%, #34c377 45%, #219c5c 80%, #167545 100%);
+    --ink: #e6ecf2;
+    --ink-dim: #91a1b4;
+    --ink-faint: #5c6c7f;
+    --line: #202a34;
+    --line-strong: #2c3846;
+    --accent: #4c85e0;
+    --accent-hover: #6a9de8;
+    --accent-ink: #06131f;
+    --accent-wash: rgba(76,133,224,0.16);
+    --accent2: #8695a8;
+    --accent2-hover: #a0adbe;
+    --accent2-wash: rgba(134,149,168,0.16);
+    --good: #34c377;
+    --good-hover: #26a862;
+    --good-bg: #0f3322;
     --good-line: #1f5c3c;
     --skill-beginner: #6ab6f2;
     --skill-beginner-bg: #12283c;
@@ -191,7 +197,7 @@ body[data-view="ledger"] { background: #e9ecf1; }
     --skill-intermediate-bg: #332711;
     --skill-advanced: #ef8f8f;
     --skill-advanced-bg: #331b1b;
-    --shadow: 0 1px 2px rgba(0,0,0,0.35), 0 10px 24px -14px rgba(0,0,0,0.6);
+    --shadow: 0 1px 2px rgba(0,0,0,0.4), 0 6px 14px -8px rgba(0,0,0,0.5), 0 20px 40px -20px rgba(0,0,0,0.7);
   }
 #view-ignition * { box-sizing: border-box; }
 #view-ignition, #view-ignition { margin: 0; padding: 0; }
@@ -383,7 +389,7 @@ body[data-view="ledger"] { background: #e9ecf1; }
     border-radius: 2px;
     padding: 13px 24px;
     cursor: pointer;
-    box-shadow: inset 0 1px 0 var(--metal-hi), inset 0 -1px 2px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: inset 0 1px 0 var(--metal-hi), inset 0 -1px 2px rgba(0,0,0,0.25), 0 3px 8px -4px rgba(13,24,38,0.35), 0 1px 2px rgba(0,0,0,0.2);
     text-shadow: 0 1px 1px rgba(0,0,0,0.25);
   }
 #view-ignition button.go:hover { filter: brightness(1.06); }
@@ -427,21 +433,30 @@ body[data-view="ledger"] { background: #e9ecf1; }
   }
 #view-ignition .readout.show { display: flex; }
 #view-ignition .badge {
+    position: relative;
     font-family: var(--font-mono);
     font-weight: 700;
     font-size: 1.6rem;
     line-height: 1;
     color: var(--accent-ink);
     background: var(--accent-metal);
-    border-radius: 2px;
+    border-radius: 3px;
     min-width: 64px;
     height: 64px;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: inset 0 1px 0 var(--metal-hi), inset 0 -2px 3px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2);
+    overflow: hidden;
+    box-shadow: inset 0 1px 0 var(--metal-hi), inset 0 -2px 3px rgba(0,0,0,0.25), 0 4px 10px -4px rgba(13,24,38,0.4), 0 1px 2px rgba(0,0,0,0.2);
     text-shadow: 0 1px 1px rgba(0,0,0,0.3);
+  }
+#view-ignition .badge::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 26%, rgba(255,255,255,0.55), rgba(255,255,255,0.08) 40%, transparent 65%);
+    pointer-events: none;
   }
 #view-ignition .readout-text .summary-line {
     font-family: var(--font-display);
@@ -503,13 +518,13 @@ body[data-view="ledger"] { background: #e9ecf1; }
     letter-spacing: 0.06em;
     font-size: 0.7rem;
     text-decoration: none;
-    background: var(--accent2-metal);
+    background: var(--good-metal);
     color: #ffffff;
     padding: 8px 13px;
-    border: 1px solid var(--accent2-hover);
+    border: 1px solid var(--good-hover);
     border-radius: 2px;
     cursor: pointer;
-    box-shadow: inset 0 1px 0 var(--metal-hi), inset 0 -1px 2px rgba(0,0,0,0.25), 0 1px 2px rgba(0,0,0,0.2);
+    box-shadow: inset 0 1px 0 var(--metal-hi), inset 0 -1px 2px rgba(0,0,0,0.25), 0 3px 8px -4px rgba(0,0,0,0.3);
     text-shadow: 0 1px 1px rgba(0,0,0,0.3);
   }
 #view-ignition .cato-link.ledger:hover { filter: brightness(1.08); }
@@ -2320,7 +2335,7 @@ if (!arrivedFiltered) {
 </div>
 <script>
 (function () {
-  var CURRENT_VERSION = "17";
+  var CURRENT_VERSION = "18";
   var banner = document.getElementById('__update-banner');
   var updateBtn = document.getElementById('__update-btn');
   var dismissBtn = document.getElementById('__dismiss-btn');
