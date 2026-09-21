@@ -2,7 +2,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<meta name="ignition-check-version" content="18">
+<meta name="ignition-check-version" content="19">
 </head><body>
 <title>Ignition Check</title>
 <style>
@@ -615,6 +615,7 @@ body[data-view="ledger"] { background: #e9ecf1; }
     font-size: 0.76rem;
     color: var(--ink-dim);
   }
+#view-ignition .ecode { white-space: nowrap; }
 #view-ignition .chip {
     display: inline-block;
     padding: 2px 9px;
@@ -1998,6 +1999,14 @@ if (!arrivedFiltered) {
     return (val === null || val === undefined) ? "—" : (val + (unit || ""));
   }
 
+  // Browsers treat "-" and "/" as line-break points, so a narrow card can
+  // split a code like "E9-6" into "E9-" / "6". Wrap each code (not the
+  // comma-space between them) so the list still wraps normally, just never
+  // inside one code.
+  function codesLine(list) {
+    return list.map(function (c) { return '<span class="ecode">' + c + '</span>'; }).join(", ");
+  }
+
   // ---- Autocomplete ----
   var input = document.getElementById("engine-input");
   var mfrSelect = document.getElementById("mfr-select");
@@ -2223,7 +2232,7 @@ if (!arrivedFiltered) {
     } else {
       matchesArea.innerHTML = '<div class="card-grid">' + matches.map(function (m) {
         var r = m.rocket;
-        var enginesLine = r.engines ? r.engines.join(", ") : ("no motors listed — original range " + r.impulse);
+        var enginesLine = r.engines ? codesLine(r.engines) : ("no motors listed — original range " + r.impulse);
         return '<div class="rocket-card tier-' + m.tier + '">' +
           '<span class="tier-tag tier-' + m.tier + '">' + m.label + '</span>' +
           '<p class="rname">' + r.name + '</p>' +
@@ -2242,7 +2251,7 @@ if (!arrivedFiltered) {
     var excludedDetails = document.getElementById("excluded-details");
     document.getElementById("excluded-summary").textContent = "Not recommended for this motor (" + nonMatches.length + ")";
     document.getElementById("excluded-body").innerHTML = nonMatches.map(function (r) {
-      var enginesLine = r.engines ? r.engines.join(", ") : (r.impulse || "no data");
+      var enginesLine = r.engines ? codesLine(r.engines) : (r.impulse || "no data");
       return '<span class="mini-chip">' + r.name + ' — ' + enginesLine + '</span>';
     }).join("");
     excludedDetails.style.display = nonMatches.length ? "block" : "none";
@@ -2253,7 +2262,7 @@ if (!arrivedFiltered) {
   ENGINES.forEach(function (e) {
     var tr = document.createElement("tr");
     var m = MESS[e.code] || {};
-    tr.innerHTML = '<td>' + e.code + '</td><td>' + e.class + '</td><td>' + e.impulseNs +
+    tr.innerHTML = '<td class="ecode">' + e.code + '</td><td>' + e.class + '</td><td>' + e.impulseNs +
       '</td><td>' + e.avgThrust + '</td><td>' + e.delay + '</td><td>' + e.maxLiftoff + '</td>' +
       '<td>' + (m.n ? m.n : '<span class="cato-clean">none</span>') + '</td>' +
       '<td>' + (m.n ? messDate(m.last) : '—') + '</td>' +
@@ -2265,7 +2274,7 @@ if (!arrivedFiltered) {
   var rocketBody = document.getElementById("rocket-table-body");
   ROCKETS.forEach(function (r) {
     var tr = document.createElement("tr");
-    var enginesLine = r.engines ? r.engines.join(", ") : ("— (impulse only: " + (r.impulse || "—") + ")");
+    var enginesLine = r.engines ? codesLine(r.engines) : ("— (impulse only: " + (r.impulse || "—") + ")");
     var srcLabel = r.source === "spreadsheet" ? "From spreadsheet" : "Impulse only";
     var srcClass = r.source === "spreadsheet" ? "src-tag" : "src-tag fallback";
     tr.innerHTML = '<td class="name-cell">' + r.name + '</td><td>' + enginesLine + '</td>' +
@@ -2335,7 +2344,7 @@ if (!arrivedFiltered) {
 </div>
 <script>
 (function () {
-  var CURRENT_VERSION = "18";
+  var CURRENT_VERSION = "19";
   var banner = document.getElementById('__update-banner');
   var updateBtn = document.getElementById('__update-btn');
   var dismissBtn = document.getElementById('__dismiss-btn');
