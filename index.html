@@ -1,14 +1,15 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
-<meta name="ignition-check-version" content="19">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="22">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Ignition Check">
 <meta name="theme-color" content="#0a0d12">
+</head><body>
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found]){display:none!important}</style>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Titillium+Web:wght@400;600;700&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 </head><body>
 <title>Ignition Check</title>
 <style>
@@ -55,6 +56,7 @@ html, body { margin: 0; padding: 0; }
   background: var(--tab-bg);
   border-bottom: 1px solid var(--tab-line);
   box-shadow: 0 1px 8px var(--tab-shadow);
+  overflow-x: auto;
 }
 .tabs button {
   font: 700 0.78rem/1 'Bahnschrift', 'Arial Narrow', 'Segoe UI', system-ui, sans-serif;
@@ -93,6 +95,9 @@ body[data-view="ignition"] { background: #e8edf1; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ignition"] { background: #090d12; } }
 :root[data-theme="dark"] body[data-view="ignition"] { background: #090d12; }
 body[data-view="ledger"] { background: #e9ecf1; }
+body[data-view="swap"] { background: #f2f4f6; }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="swap"] { background: #12171d; } }
+:root[data-theme="dark"] body[data-view="swap"] { background: #12171d; }
 @media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) body[data-view="ledger"] { background: #0d1015; } }
 :root[data-theme="dark"] body[data-view="ledger"] { background: #0d1015; }
 
@@ -1264,6 +1269,7 @@ body[data-view="ledger"] { background: #e9ecf1; }
 <nav class="tabs" role="tablist" aria-label="Tools">
   <button type="button" role="tab" id="tab-ignition" aria-selected="true" aria-controls="view-ignition">Fleet Check</button>
   <button type="button" role="tab" id="tab-ledger" aria-selected="false" aria-controls="view-ledger">CATO Ledger</button>
+  <button type="button" role="tab" id="tab-swap" aria-selected="false" aria-controls="view-swap">Motor Swap</button>
 </nav>
 
 <div class="view" id="view-ignition" role="tabpanel" aria-labelledby="tab-ignition">
@@ -2307,12 +2313,276 @@ if (!arrivedFiltered) {
 
 </script>
 
+
+<div class="view" id="view-swap" role="tabpanel" aria-labelledby="tab-swap" hidden>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Condensed:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* ------------------------------------------------ Motor Swap Map (scoped) */
+
+#view-swap{
+  --bg:#f2f4f6; --panel:#ffffff; --ink:#18212c; --muted:#5b6674; --line:#d5dbe2; --grid:#e3e8ee;
+  --band-a:rgba(60,90,130,.035); --band-b:rgba(60,90,130,.085);
+  --estes:#d4462a; --aero:#2a67b0; --quest:#23916a;
+  --hl:#e8a317; --good:#23916a; --warn:#c98a10; --bad:#c23b3b;
+  --sans:"IBM Plex Sans Condensed","Arial Narrow",system-ui,sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]) #view-swap{
+  --bg:#12171d; --panel:#1a2129; --ink:#e4e9ef; --muted:#93a0af; --line:#2d3741; --grid:#232c36;
+  --band-a:rgba(160,190,230,.03); --band-b:rgba(160,190,230,.075);
+  --estes:#f0694c; --aero:#5b97e0; --quest:#43bf92; --hl:#f2b93b;
+}}
+:root[data-theme="dark"] #view-swap{
+  --bg:#12171d; --panel:#1a2129; --ink:#e4e9ef; --muted:#93a0af; --line:#2d3741; --grid:#232c36;
+  --band-a:rgba(160,190,230,.03); --band-b:rgba(160,190,230,.075);
+  --estes:#f0694c; --aero:#5b97e0; --quest:#43bf92; --hl:#f2b93b;
+}
+#view-swap{background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:15px;line-height:1.45;padding-inline:16px;padding-block:24px 60px}
+#view-swap *{box-sizing:border-box}
+#view-swap .wrap{max-width:1180px;margin:0 auto;display:grid;gap:18px}
+#view-swap h1{font-size:30px;font-weight:700;margin:0;letter-spacing:-.01em;text-wrap:balance}
+#view-swap h2{font-size:17px;font-weight:600;margin:0 0 8px;text-transform:uppercase;letter-spacing:.06em}
+#view-swap p{margin:0}
+#view-swap .lede{color:var(--muted);max-width:72ch}
+#view-swap .controls{display:flex;flex-wrap:wrap;gap:14px 22px;align-items:center}
+#view-swap .grp{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+#view-swap .grp>span{font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--muted);margin-right:4px}
+#view-swap .chip{font:500 13px var(--sans);border:1px solid var(--line);background:var(--panel);color:var(--ink);border-radius:999px;padding:4px 11px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+#view-swap .chip[aria-pressed="false"]{opacity:.45}
+#view-swap .chip:focus-visible,#view-swap select:focus-visible{outline:2px solid var(--hl);outline-offset:2px}
+#view-swap .dot{width:9px;height:9px;border-radius:50%}
+#view-swap input[type=number]{font:500 14px var(--mono);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:7.5em}
+#view-swap .tier{font:600 11px var(--sans);text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
+#view-swap .tier.t1{color:var(--good)}#view-swap .tier.t2{color:var(--good);opacity:.8}#view-swap .tier.t3{color:var(--warn)}#view-swap .tier.t4{color:var(--bad)}
+#view-swap .twbad{color:var(--bad);font-weight:600}#view-swap .twwarn{color:var(--warn);font-weight:600}
+#view-swap select{font:500 14px var(--mono);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
+#view-swap .main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
+@media (max-width:900px){#view-swap .main{grid-template-columns:1fr}}
+#view-swap .chartbox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 8px 6px;overflow-x:auto}
+#view-swap svg{display:block;width:100%;min-width:560px;height:auto}
+#view-swap svg text{font-family:var(--mono);fill:var(--muted)}
+#view-swap .side{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;display:grid;gap:12px}
+#view-swap .pick{display:grid;gap:2px}
+#view-swap .pick .name{font:600 26px var(--sans)}
+#view-swap .pick .spec{font:13px var(--mono);color:var(--muted)}
+#view-swap .mlist{list-style:none;margin:0;padding:0;display:grid;gap:8px}
+#view-swap .mlist li{display:grid;grid-template-columns:52px 1fr;gap:10px;align-items:center;border-top:1px solid var(--line);padding-top:8px;cursor:pointer}
+#view-swap .pct{font:600 18px var(--mono);text-align:right}
+#view-swap .mname{font-weight:600}
+#view-swap .msub{font:12px var(--mono);color:var(--muted)}
+#view-swap .fit{white-space:nowrap;font:600 11px var(--sans);text-transform:uppercase;letter-spacing:.06em;padding:1px 7px;border-radius:999px;border:1px solid currentColor;margin-left:6px}
+#view-swap .fit.ok{color:var(--good)}#view-swap .fit.adapt{color:var(--warn)}#view-swap .fit.no{color:var(--bad)}
+#view-swap .note{font-size:13px;color:var(--muted)}
+#view-swap .tablebox{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:16px;overflow-x:auto}
+#view-swap table{border-collapse:collapse;width:100%;font-size:14px;min-width:640px}
+#view-swap th{text-align:left;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);font-weight:600;border-bottom:1px solid var(--line);padding:6px 8px}
+#view-swap td{padding:6px 8px;border-bottom:1px solid var(--grid);font-variant-numeric:tabular-nums}
+#view-swap td.m{font-family:var(--mono);font-size:13px}
+#view-swap tr.row{cursor:pointer}#view-swap tr.row:hover td{background:var(--grid)}
+#view-swap .tip{position:fixed;pointer-events:none;background:var(--ink);color:var(--bg);font:12px var(--mono);padding:6px 8px;border-radius:6px;z-index:5;white-space:nowrap}
+#view-swap .legend{display:flex;flex-wrap:wrap;gap:14px;font-size:13px;color:var(--muted)}
+#view-swap .legend b{color:var(--ink);font-weight:600}
+
+#view-swap .main{scroll-margin-top:var(--tab-h)}
+</style>
+<div class="wrap">
+  <header style="display:grid;gap:6px">
+    <h1>Motor Swap Map</h1>
+    <p class="lede">Every currently listed Estes, Quest and AeroTech motor (through G) plotted by total impulse against average thrust on log scales. Shaded bands are NAR letter classes; dashed diagonals are burn time. Motors that sit close together fly a rocket about the same — pick one to see its nearest cross-brand substitutes.</p>
+  </header>
+
+  <div class="controls">
+    <div class="grp" id="sw-brands"><span>Brand</span></div>
+    <div class="grp" id="sw-dias"><span>Diameter</span></div>
+    <div class="grp"><span>Motor</span><select id="sw-sel" aria-label="Choose a motor"></select></div>
+    <div class="grp"><span>Liftoff weight</span><input id="sw-wt" type="number" min="0" step="1" inputmode="numeric" placeholder="grams" aria-label="Rocket liftoff weight in grams, with motor"><button type="button" class="chip" id="sw-same" aria-pressed="false">Include same brand</button></div>
+  </div>
+
+  <div class="main">
+    <div class="chartbox"><svg id="sw-chart" viewBox="0 0 820 560" role="img" aria-label="Log-log scatter of total impulse versus average thrust"></svg></div>
+    <aside class="side" id="sw-side"></aside>
+  </div>
+
+  <div class="legend">
+    <span><b>Match %</b> weighs total impulse (altitude) fully and average thrust (burn profile) at half weight. <b style="color:var(--good)">90+ Equivalent</b> · <b style="color:var(--good)">75–89 Close</b>, same class of flight, confirm delay · <b style="color:var(--warn)">60–74 Simulate first</b>, noticeably different altitude or burn · <b style="color:var(--bad)">&lt;60 Not a substitute</b>.</span>
+    <span><b style="color:var(--good)">Drop-in</b> same diameter · <b style="color:var(--warn)">Adapter</b> smaller motor, needs a spacer/adapter · <b style="color:var(--bad)">Too wide</b> won't fit the mount.</span>
+  </div>
+
+  <section class="tablebox">
+    <h2>Best cross-brand swap for every motor</h2>
+    <table><thead><tr><th>Motor</th><th>Dia</th><th>Ns / N / s</th><th>Best substitute</th><th>Dia</th><th>Ns / N / s</th><th>Match</th><th>Fit</th></tr></thead><tbody id="sw-tbody"></tbody></table>
+  </section>
+
+  <p class="note">Data: ThrustCurve.org listings of currently available motors, pulled Sept 2026, plus the Estes E9 and E12 (24 mm, 95 mm long), which ThrustCurve lists as out of production (OOP) but are still in many flyers' stock. They're drawn with a hollow marker. Before swapping, also check motor length (AeroTech 24 mm E/F and many reloads are longer than Estes 70 mm casings), available ejection delays, liftoff weight vs. peak thrust, and that reloads (RMS) need the matching AeroTech case. Re-simulate in OpenRocket/RockSim with the actual thrust curve before flying.</p>
+</div>
+<div class="tip" id="sw-tip" hidden></div>
+
+<div class="tip" id="sw-tip" hidden></div>
+<script>
+(function(){
+
+const RAW = [
+// brand, name, dia mm, impulse Ns, avg thrust N, burn s, type
+["Estes","¼A3",13,0.6,2.4,0.3,"SU"],["Estes","½A3",13,1.1,3.0,0.4,"SU"],["Estes","½A6",18,1.1,3.4,0.3,"SU"],
+["Estes","A10",13,1.9,1.8,1.1,"SU"],["Estes","A3",13,2.2,2.2,1.0,"SU"],["Estes","A8",18,2.5,3.2,0.7,"SU"],
+["Estes","B6",18,4.3,5.0,0.9,"SU"],["Estes","B4",18,5.0,4.2,1.0,"SU"],["Estes","C5",18,7.8,3.9,2.0,"SU"],
+["Estes","C11",24,8.8,10.9,0.8,"SU"],["Estes","C6",18,8.8,4.7,1.9,"SU"],["Estes","D12",24,16.8,10.2,1.7,"SU"],
+["Estes","E9",24,27.9,9.0,3.1,"SU",1],["Estes","E12",24,27.2,11.2,2.4,"SU",1],
+["Estes","E16",29,33.4,16.0,2.1,"SU"],["Estes","F15",29,49.6,14.4,3.5,"SU"],["Estes","F26",29,62.2,27.0,2.3,"SU"],
+["Estes","F50",29,76.8,53.7,1.4,"SU"],["Estes","G40",29,97.1,40.9,2.4,"SU"],
+["Quest","MicroMaxx II",6,0.2,0.3,0.8,"SU"],["Quest","A6",18,2.3,4.2,0.6,"SU"],["Quest","A3",18,2.5,3.2,0.8,"SU"],
+["Quest","B4",18,4.9,4.4,1.1,"SU"],["Quest","B6W",18,4.9,4.2,1.2,"SU"],["Quest","B14T",18,5.0,13.0,0.4,"SU"],
+["Quest","C6",18,8.8,3.5,2.5,"SU"],["Quest","C12",18,9.8,11.7,0.8,"SU"],["Quest","C18W",18,9.8,19.1,0.5,"SU"],
+["Quest","D16",18,12.4,15.6,0.8,"SU"],["Quest","D20W",18,13.8,18.3,0.8,"SU"],["Quest","D5",20,17.6,3.8,4.6,"SU"],
+["Quest","D5-P",20,19.6,4.9,4.0,"SU"],["Quest","E35W",24,39.4,33.8,1.1,"SU"],["Quest","F41W",24,47.7,42.2,1.1,"SU"],
+["AeroTech","C3.4T",18,9.0,3.1,2.9,"RMS"],["AeroTech","D2.3T",18,17.2,2.1,8.1,"RMS"],["AeroTech","D24T",18,18.0,14.8,1.2,"RMS"],
+["AeroTech","D10W",18,18.8,13.4,1.4,"SU"],["AeroTech","D13W",18,19.3,12.7,1.5,"RMS"],["AeroTech","D21T",18,19.6,20.8,0.9,"SU"],
+["AeroTech","D7-RCT",24,18.5,6.5,2.9,"RMS"],["AeroTech","D9W",24,18.8,10.0,1.9,"RMS"],["AeroTech","D15T",24,19.0,16.5,1.2,"RMS"],
+["AeroTech","D22W",24,19.3,21.7,0.9,"SU"],["AeroTech","E26W",24,27.9,23.5,1.2,"SU"],["AeroTech","E7-RCT",24,29.4,5.4,5.4,"RMS"],
+["AeroTech","E11J",24,32.7,11.6,2.8,"RMS"],["AeroTech","E30T",24,33.6,32.4,1.0,"SU"],["AeroTech","E12-RCJ",24,34.2,11.2,3.1,"RMS"],
+["AeroTech","E20W",24,35.0,21.8,1.6,"SU"],["AeroTech","E18W",24,36.5,17.1,2.1,"RMS"],["AeroTech","E6-RCT",24,37.5,5.3,7.1,"RMS"],
+["AeroTech","E28T",24,39.7,32.5,1.2,"RMS"],["AeroTech","F44W",24,41.5,44.0,1.0,"SU"],["AeroTech","F12J",24,43.2,14.7,2.9,"RMS"],
+["AeroTech","F30FJ",24,47.0,30.4,1.6,"SU"],["AeroTech","F24W",24,47.3,22.2,2.1,"RMS"],["AeroTech","F62FJ",24,47.6,56.9,0.8,"RMS"],
+["AeroTech","F63R",24,49.5,58.1,0.9,"RMS"],["AeroTech","F39T",24,49.7,37.3,1.3,"RMS"],["AeroTech","F51NT",24,55.1,55.9,1.0,"RMS"],
+["AeroTech","F32T",24,56.9,34.1,1.7,"SU"],["AeroTech","F35W",24,57.1,34.9,1.6,"RMS"],
+["AeroTech","E23T",29,35.3,22.5,1.6,"RMS"],["AeroTech","E24C",29,36.3,22.4,1.6,"SU"],["AeroTech","E16W",29,37.7,18.8,2.0,"RMS"],
+["AeroTech","F23FJ",29,41.2,18.6,2.2,"SU"],["AeroTech","F27R/L",29,49.6,24.4,2.0,"SU"],["AeroTech","F37W",29,50.7,31.7,1.6,"RMS"],
+["AeroTech","F62T",29,51.0,62.0,1.1,"RMS"],["AeroTech","F20W/L",29,51.8,20.8,2.5,"SU"],["AeroTech","F42T/L",29,52.9,42.0,1.3,"SU"],
+["AeroTech","F67W",29,61.1,69.0,0.9,"SU"],["AeroTech","F26FJ",29,62.2,26.0,2.4,"SU"],["AeroTech","F22J",29,65.0,19.6,3.3,"RMS"],
+["AeroTech","F52C",29,66.2,52.7,1.3,"SU"],["AeroTech","F52T",29,73.0,51.4,1.4,"RMS"],["AeroTech","F50T",29,76.8,53.7,1.4,"SU"],
+["AeroTech","F67C",29,77.5,55.2,1.4,"SU"],["AeroTech","F25W",29,77.9,25.6,3.1,"SU"],["AeroTech","F40W",29,78.1,37.9,2.1,"RMS"],
+["AeroTech","F115SN",29,79.2,114.2,0.7,"SU"],["AeroTech","G54W",29,81.1,53.7,1.5,"RMS"],["AeroTech","G104T",29,81.5,104.0,1.0,"RMS"],
+["AeroTech","G74W",29,82.8,74.0,1.1,"SU"],["AeroTech","G53FJ",29,90.9,53.1,1.7,"RMS"],["AeroTech","G40W",29,97.1,40.9,2.4,"SU"],
+["AeroTech","G77R/L",29,102.9,80.1,1.3,"SU"],["AeroTech","G77R",29,105.0,77.0,1.4,"RMS"],["AeroTech","G72DM",29,105.0,80.8,1.3,"SU"],
+["AeroTech","G79W/L",29,108.3,72.6,1.5,"SU"],["AeroTech","G79W",29,108.6,79.0,1.4,"RMS"],["AeroTech","G78G/L",29,109.9,79.9,1.4,"SU"],
+["AeroTech","G75M",29,115.2,87.5,1.3,"SU"],["AeroTech","G25W",29,117.5,22.2,5.3,"RMS"],["AeroTech","G76G",29,118.0,76.0,1.5,"RMS"],
+["AeroTech","G64W",29,118.8,56.8,2.1,"RMS"],["AeroTech","G125T",29,128.0,125.0,1.0,"SU"],["AeroTech","G73C",29,128.6,69.3,1.9,"SU"],
+["AeroTech","G8ST",29,130.0,6.6,19.8,"SU"],["AeroTech","G75J",29,135.6,75.0,2.4,"RMS"],["AeroTech","G80T",29,136.6,77.6,1.7,"SU"],
+["AeroTech","G11",29,139.0,10.2,13.6,"SU"],["AeroTech","G12ST",29,144.0,11.3,12.7,"SU"],["AeroTech","HP-G138T",29,157.1,138.0,1.1,"RMS"],
+];
+const M = RAW.map((r,i)=>({id:i,brand:r[0],name:r[1],dia:r[2],I:r[3],T:r[4],t:r[5],type:r[6],oop:!!r[7]}));
+const CLASSES=[["¼A",.3125,.625],["½A",.625,1.25],["A",1.25,2.5],["B",2.5,5],["C",5,10],["D",10,20],["E",20,40],["F",40,80],["G",80,160]];
+const cls=I=>{for(const c of CLASSES) if(I<=c[2]*1.0001) return c[0]; return "H"};
+const BRANDS=["Estes","Quest","AeroTech"], BCOL={Estes:"var(--estes)",Quest:"var(--quest)",AeroTech:"var(--aero)"};
+const DIAS=[6,13,18,20,24,29];
+const state={same:false,wt:0,brands:new Set(BRANDS),dias:new Set(DIAS),sel:M.find(m=>m.brand==="Estes"&&m.name==="D12").id};
+try{const s=JSON.parse(localStorage.getItem("ic-swap")||"null"); if(s&&M[s.sel]) state.sel=s.sel;}catch(e){}
+
+function dist(a,b){const di=Math.log(a.I/b.I), dt=Math.log(a.T/b.T); return Math.hypot(di,dt*0.5);}
+const tier=p=>p>=90?["t1","Equivalent"]:p>=75?["t2","Close — check delay"]:p>=60?["t3","Simulate first"]:["t4","Not a substitute"];
+const twOf=(m,g)=>g>0?m.T/(g*0.00981):null;
+const twCls=tw=>tw<3?"twbad":tw<5?"twwarn":"";
+const twTxt=tw=>tw<3?" — too weak":tw<5?" — marginal, long rod":"";
+const pct=d=>Math.max(0,Math.round(100*Math.exp(-d/0.6)));
+function fit(from,to){ if(to.dia===from.dia) return ["ok","Drop-in"]; if(to.dia<from.dia) return ["adapt","Adapter"]; return ["no","Too wide"]; }
+function matches(m,n=6){ return M.filter(o=>o.id!==m.id && (state.same||o.brand!==m.brand) && state.brands.has(o.brand) && state.dias.has(o.dia))
+  .map(o=>({o,d:dist(m,o)})).sort((a,b)=>a.d-b.d).slice(0,n); }
+
+/* ---- chart ---- */
+const W=820,H=560,L=62,R=16,Tp=30,B=52;
+const X0=Math.log10(.15),X1=Math.log10(200),Y0=Math.log10(.25),Y1=Math.log10(180);
+const sx=v=>L+(Math.log10(v)-X0)/(X1-X0)*(W-L-R), sy=v=>H-B-(Math.log10(v)-Y0)/(Y1-Y0)*(H-Tp-B);
+const NS="http://www.w3.org/2000/svg", svg=document.getElementById("sw-chart");
+const el=(t,a,p=svg)=>{const e=document.createElementNS(NS,t);for(const k in a)e.setAttribute(k,a[k]);p.appendChild(e);return e;};
+function shape(g,m,x,y,r,attrs){
+  if(m.dia<=13) return el("circle",{cx:x,cy:y,r:r*.8,...attrs},g);
+  if(m.dia===18) return el("circle",{cx:x,cy:y,r,...attrs},g);
+  if(m.dia<=24) return el("rect",{x:x-r*.9,y:y-r*.9,width:r*1.8,height:r*1.8,...attrs},g);
+  return el("path",{d:`M${x} ${y-r*1.25}L${x+r*1.25} ${y}L${x} ${y+r*1.25}L${x-r*1.25} ${y}Z`,...attrs},g);
+}
+function drawBase(){
+  svg.innerHTML="";
+  el("defs",{}).innerHTML=`<clipPath id="plot"><rect x="${L}" y="${Tp}" width="${W-L-R}" height="${H-Tp-B}"/></clipPath>`;
+  CLASSES.forEach((c,i)=>{const x0=Math.max(sx(c[1]),L),x1=sx(c[2]);
+    el("rect",{x:x0,y:Tp,width:x1-x0,height:H-Tp-B,fill:i%2?"var(--band-b)":"var(--band-a)"});
+    el("text",{x:(x0+x1)/2,y:Tp-10,"text-anchor":"middle","font-size":13,"font-weight":600,style:"fill:var(--ink)"}).textContent=c[0];});
+  const gl=el("g",{"clip-path":"url(#plot)"});
+  [.25,.5,1,2,5,10,20,50,100].forEach(v=>{el("line",{x1:L,x2:W-R,y1:sy(v),y2:sy(v),stroke:"var(--grid)"},gl);
+    el("text",{x:L-8,y:sy(v)+4,"text-anchor":"end","font-size":11}).textContent=v;});
+  [.2,.5,1,2,5,10,20,50,100,200].forEach(v=>el("text",{x:sx(v),y:H-B+18,"text-anchor":"middle","font-size":11}).textContent=v);
+  // burn-time diagonals: T = I / t
+  [.5,1,2,4,8,16].forEach(t=>{const Ia=.15,Ib=200;
+    el("line",{x1:sx(Ia),y1:sy(Ia/t),x2:sx(Ib),y2:sy(Ib/t),stroke:"var(--muted)","stroke-dasharray":"3 5","stroke-opacity":.45},gl);
+    let I=Math.min(180,180*t*.9); const Tv=I/t; if(Tv<.3){I=.3*t*1.4;}
+    const lx=sx(Math.min(I,170)), ly=sy(Math.min(I,170)/t);
+    if(ly>Tp+8&&ly<H-B-6) el("text",{x:lx-4,y:ly-5,"text-anchor":"end","font-size":10,style:"fill:var(--muted);opacity:.8"},gl).textContent=t+" s";});
+  el("rect",{x:L,y:Tp,width:W-L-R,height:H-Tp-B,fill:"none",stroke:"var(--line)"});
+  el("text",{x:(L+W-R)/2,y:H-12,"text-anchor":"middle","font-size":12,style:"fill:var(--ink)"}).textContent="Total impulse (N·s, log)";
+  el("text",{x:16,y:(Tp+H-B)/2,"text-anchor":"middle","font-size":12,transform:`rotate(-90 16 ${(Tp+H-B)/2})`,style:"fill:var(--ink)"}).textContent="Average thrust (N, log)";
+}
+const tip=document.getElementById("sw-tip");
+function draw(){
+  drawBase();
+  const sel=M[state.sel], ms=matches(sel), mset=new Set(ms.map(x=>x.o.id));
+  const gl=el("g",{"clip-path":"url(#plot)"});
+  ms.forEach(({o},i)=>el("line",{x1:sx(sel.I),y1:sy(sel.T),x2:sx(o.I),y2:sy(o.T),stroke:"var(--hl)","stroke-width":i?1.2:2.2,"stroke-opacity":i?.55:.95},gl));
+  const vis=M.filter(m=>state.brands.has(m.brand)&&state.dias.has(m.dia));
+  const g=el("g",{});
+  vis.forEach(m=>{const on=m.id===state.sel||mset.has(m.id);
+    const s=shape(g,m,sx(m.I),sy(m.T),m.id===state.sel?7.5:5.2,{fill:m.oop?"var(--panel)":BCOL[m.brand],"fill-opacity":on?1:.72,stroke:m.id===state.sel?"var(--ink)":m.oop?BCOL[m.brand]:"var(--panel)","stroke-width":m.id===state.sel?2:m.oop?2:1,style:"cursor:pointer"});
+    s.addEventListener("click",()=>select(m.id));
+    s.addEventListener("mousemove",e=>{tip.hidden=false;tip.textContent=`${m.brand} ${m.name} · ${m.dia}mm · ${m.I} Ns · ${m.T} N · ${m.t}s · ${m.type}${m.oop?' · OOP':''}`;tip.style.left=Math.min(e.clientX+12,innerWidth-300)+"px";tip.style.top=(e.clientY+12)+"px";});
+    s.addEventListener("mouseleave",()=>tip.hidden=true);
+  });
+  // labels for selection + matches
+  [sel,...ms.map(x=>x.o)].forEach((m,i)=>{ if(!vis.includes(m)&&i) return;
+    const x=sx(m.I),y=sy(m.T), right=x<W-110;
+    el("text",{x:right?x+10:x-10,y:y-7,"text-anchor":right?"start":"end","font-size":i?11:13,"font-weight":i?500:700,style:`fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:3px`}).textContent=m.name;});
+  renderSide(sel,ms);
+}
+function renderSide(sel,ms){
+  const side=document.getElementById("sw-side");
+  side.innerHTML=`<div class="pick"><span class="msub" style="color:${BCOL[sel.brand]};font-weight:600">${sel.brand} · ${cls(sel.I)} class · ${sel.type==="RMS"?"reload":"single-use"}${sel.oop?" · out of production":""}</span>
+    <span class="name">${sel.name}</span><span class="spec">${sel.dia} mm · ${sel.I} N·s · ${sel.T} N avg · ${sel.t} s burn${state.wt?` · T/W <span class="${twCls(twOf(sel,state.wt))}">${twOf(sel,state.wt).toFixed(1)}:1${twTxt(twOf(sel,state.wt))}</span>`:""}</span></div>
+    <h2 style="margin:4px 0 0">Closest substitutes</h2>
+    <ul class="mlist">${ms.map(({o,d})=>{const f=fit(sel,o);return `<li data-id="${o.id}"><span class="pct" style="color:${BCOL[o.brand]}">${pct(d)}%</span>
+      <span><span class="mname">${o.brand} ${o.name}</span><span class="fit ${f[0]}">${f[1]}</span><span class="tier ${tier(pct(d))[0]}">${tier(pct(d))[1]}</span><br><span class="msub">${state.wt?(()=>{const tw=twOf(o,state.wt);return `<span class="${twCls(tw)}">T/W ${tw.toFixed(1)}:1${twTxt(tw)}</span> · `})():""}${o.dia} mm · ${o.I} N·s · ${o.T} N · ${o.t} s${o.type==="RMS"?" · reload":""}${o.oop?" · OOP":""} · ${dI(sel,o)}</span></span></li>`}).join("")||'<li class="note">Nothing visible — turn a brand or diameter back on.</li>'}</ul>
+    <p class="note"><b>No % makes a swap safe on its own.</b> Whatever the score, don't fly a substitute that's too wide or long for the mount, exceeds the kit's max recommended motor, lifts off under 3:1 average thrust-to-weight (3–5:1 needs a long rod and a calm day; 5:1+ is comfortable)${state.wt?"":" — enter liftoff weight above to check"}, or has no delay near your current one.</p>`;
+  side.querySelectorAll("li[data-id]").forEach(li=>li.addEventListener("click",()=>select(+li.dataset.id)));
+}
+const dI=(a,b)=>{const p=Math.round((b.I/a.I-1)*100), q=Math.round((b.T/a.T-1)*100);return `${p>=0?"+":""}${p}% impulse, ${q>=0?"+":""}${q}% thrust`;};
+function select(id){state.sel=id;document.getElementById("sw-sel").value=id;try{localStorage.setItem("ic-swap",JSON.stringify({sel:id}))}catch(e){}draw();}
+
+/* ---- controls ---- */
+const bWrap=document.getElementById("sw-brands"), dWrap=document.getElementById("sw-dias");
+BRANDS.forEach(b=>{const c=document.createElement("button");c.className="chip";c.id="b-"+b;c.setAttribute("aria-pressed","true");
+  c.innerHTML=`<span class="dot" style="background:${BCOL[b]}"></span>${b}`;c.onclick=()=>{state.brands.has(b)?state.brands.delete(b):state.brands.add(b);c.setAttribute("aria-pressed",state.brands.has(b));draw();table();};bWrap.appendChild(c);});
+const glyph={6:"●",13:"●",18:"●",20:"■",24:"■",29:"◆"};
+DIAS.forEach(d=>{const c=document.createElement("button");c.className="chip";c.id="d-"+d;c.setAttribute("aria-pressed","true");
+  c.innerHTML=`<span style="font-size:${d<=13?9:12}px;color:var(--muted)">${glyph[d]}</span>${d} mm`;c.onclick=()=>{state.dias.has(d)?state.dias.delete(d):state.dias.add(d);c.setAttribute("aria-pressed",state.dias.has(d));draw();table();};dWrap.appendChild(c);});
+const selEl=document.getElementById("sw-sel");
+BRANDS.forEach(b=>{const og=document.createElement("optgroup");og.label=b;
+  M.filter(m=>m.brand===b).sort((a,c)=>a.I-c.I).forEach(m=>{const o=document.createElement("option");o.value=m.id;o.textContent=`${m.name}  (${m.dia}mm)${m.oop?' · OOP':''}`;og.appendChild(o);});selEl.appendChild(og);});
+selEl.value=state.sel; selEl.onchange=()=>select(+selEl.value);
+const wtEl=document.getElementById("sw-wt"); wtEl.oninput=()=>{state.wt=parseFloat(wtEl.value)||0;draw();};
+const sameEl=document.getElementById("sw-same"); sameEl.onclick=()=>{state.same=!state.same;sameEl.setAttribute("aria-pressed",state.same);draw();table();};
+
+/* ---- table ---- */
+function table(){
+  const rows=M.filter(m=>state.brands.has(m.brand)&&state.dias.has(m.dia)).sort((a,b)=>BRANDS.indexOf(a.brand)-BRANDS.indexOf(b.brand)||a.I-b.I);
+  document.getElementById("sw-tbody").innerHTML=rows.map(m=>{
+    // prefer same-diameter match if within 10 pts of absolute best
+    const all=matches(m,40); if(!all.length) return "";
+    const same=all.find(x=>x.o.dia===m.dia), best=(same&&pct(same.d)>=pct(all[0].d)-10)?same:all[0];
+    const o=best.o,f=fit(m,o),p=pct(best.d);
+    return `<tr class="row" data-id="${m.id}"><td><b style="color:${BCOL[m.brand]}">${m.brand}</b> ${m.name}${m.oop?' <span class="msub">OOP</span>':''}</td><td class="m">${m.dia}</td><td class="m">${m.I} / ${m.T} / ${m.t}</td>
+      <td><b style="color:${BCOL[o.brand]}">${o.brand}</b> ${o.name}</td><td class="m">${o.dia}</td><td class="m">${o.I} / ${o.T} / ${o.t}</td>
+      <td class="m" style="font-weight:600;color:${p>=75?"var(--good)":p>=60?"var(--warn)":"var(--bad)"}">${p}%</td><td><span class="fit ${f[0]}" style="margin:0">${f[1]}</span></td></tr>`;}).join("");
+  document.querySelectorAll("#view-swap tr.row").forEach(tr=>tr.onclick=()=>{select(+tr.dataset.id);document.getElementById("view-swap").scrollIntoView({behavior:"smooth"});});
+}
+draw(); table();
+
+})();
+</script>
+</div>
 <script>
 (function () {
   var views = { ignition: document.getElementById("view-ignition"),
-                ledger: document.getElementById("view-ledger") };
+                ledger: document.getElementById("view-ledger"),
+                swap: document.getElementById("view-swap") };
   var tabs = { ignition: document.getElementById("tab-ignition"),
-               ledger: document.getElementById("tab-ledger") };
+               ledger: document.getElementById("tab-ledger"),
+               swap: document.getElementById("tab-swap") };
 
   function setView(name) {
     Object.keys(views).forEach(function (k) {
@@ -2350,7 +2620,7 @@ if (!arrivedFiltered) {
 </div>
 <script>
 (function () {
-  var CURRENT_VERSION = "19";
+  var CURRENT_VERSION = "22";
   var banner = document.getElementById('__update-banner');
   var updateBtn = document.getElementById('__update-btn');
   var dismissBtn = document.getElementById('__dismiss-btn');
@@ -2396,4 +2666,5 @@ if (!arrivedFiltered) {
 })();
 </script>
 
+</body></html>
 </body></html>
