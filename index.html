@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="23">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="24">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2402,6 +2402,7 @@ if (!arrivedFiltered) {
     <div class="grp" id="sw-rocket-grp"><span>Rocket</span><select id="sw-rocket" aria-label="Pick a rocket from your fleet to fill in its weight"><option value="">— fill weight from fleet —</option></select></div>
     <div class="grp"><span>Liftoff weight</span><input id="sw-wt" type="number" min="0" step="1" inputmode="numeric" placeholder="grams" aria-label="Rocket liftoff weight in grams, with motor"><button type="button" class="chip" id="sw-same" aria-pressed="false">Include same brand</button></div>
   </div>
+  <p class="note" id="sw-rocket-note">Picking a rocket fills in its airframe weight from the planner &mdash; not true liftoff weight, since that field wants rocket + motor. Add the motor's own mass on top before checking thrust-to-weight.</p>
 
   <div class="main">
     <div class="chartbox"><svg id="sw-chart" viewBox="0 0 820 560" role="img" aria-label="Log-log scatter of total impulse versus average thrust"></svg></div>
@@ -2567,7 +2568,7 @@ const wtEl=document.getElementById("sw-wt"); wtEl.oninput=()=>{state.wt=parseFlo
 const rkEl=document.getElementById("sw-rocket");
 const FLEET=(window.FLEET_ROCKETS||[]).filter(r=>typeof r.weight==="number"&&r.weight>0)
   .slice().sort((a,b)=>a.name.localeCompare(b.name));
-if(!FLEET.length){ document.getElementById("sw-rocket-grp").hidden=true; }
+if(!FLEET.length){ document.getElementById("sw-rocket-grp").hidden=true; document.getElementById("sw-rocket-note").hidden=true; }
 else FLEET.forEach((r,i)=>{const o=document.createElement("option");o.value=String(i);
   o.textContent=`${r.name} · ${r.weight} g`;rkEl.appendChild(o);});
 rkEl.onchange=()=>{
@@ -2642,7 +2643,7 @@ draw(); table();
 </div>
 <script>
 (function () {
-  var CURRENT_VERSION = "23";
+  var CURRENT_VERSION = "24";
   var banner = document.getElementById('__update-banner');
   var updateBtn = document.getElementById('__update-btn');
   var dismissBtn = document.getElementById('__dismiss-btn');
