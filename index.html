@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="26">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="27">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -627,6 +627,7 @@ body[data-view="swap"] { background: #f2f4f6; }
     color: var(--ink-dim);
   }
 #view-ignition .ecode { white-space: nowrap; }
+#view-ignition .ecode-alt { color: var(--ink-faint); font-style: italic; white-space: nowrap; }
 #view-ignition .chip {
     display: inline-block;
     padding: 2px 9px;
@@ -1332,6 +1333,7 @@ body[data-view="swap"] { background: #f2f4f6; }
       <p class="cato-note" id="cato-note"></p>
     </div>
 
+    <p class="hint" style="margin:0 0 10px;">Altitudes next to each motor are an idealized, no-drag estimate (impulse &divide; rocket weight, coasting out on gravity alone) &mdash; a rough ceiling, not a flight prediction, and they use the rocket's airframe weight only, not rocket+motor.</p>
     <div id="matches-area"></div>
 
     <details class="excluded" id="excluded-details">
@@ -2023,6 +2025,44 @@ if (!arrivedFiltered) {
     return list.map(function (c) { return '<span class="ecode">' + c + '</span>'; }).join(", ");
   }
 
+  // Look up a recommended-motors cell entry (which may carry a stage label or
+  // parenthetical note, see normalizeCode above) against the engine catalog.
+  function engineLookup(code) {
+    var norm = normalizeCode(code);
+    var found = ENGINES.filter(function (e) {
+      return e.baseCode.toUpperCase() === norm || e.code.toUpperCase() === norm;
+    });
+    return found.length ? found[0] : null;
+  }
+
+  // Idealized apogee estimate: treat the motor's whole impulse as an instant
+  // burnout velocity (impulse / mass), then coast under gravity alone — no
+  // drag, no burn-phase altitude. Real flights land well under this; it's a
+  // rough ceiling, not a prediction. Mass is the rocket's listed Weight only
+  // (airframe, no motor) — same simplification as the Motor Swap weight field.
+  function estAltitudeFt(impulseNs, weightG) {
+    if (!impulseNs || !weightG) return null;
+    var v = impulseNs / (weightG / 1000);
+    var hM = (v * v) / (2 * 9.80665);
+    return hM * 3.280839895;
+  }
+
+  function fmtAlt(ft) {
+    var r = ft >= 1000 ? Math.round(ft / 50) * 50 : Math.round(ft / 10) * 10;
+    return r.toLocaleString("en-US");
+  }
+
+  // Same as codesLine, but tags each recommended code with its own projected
+  // altitude for this rocket's weight (ideal, no drag — see estAltitudeFt).
+  function codesLineWithAlt(list, rocket) {
+    return list.map(function (c) {
+      var eng = engineLookup(c);
+      var ft = eng ? estAltitudeFt(eng.impulseNs, rocket.weight) : null;
+      var altSpan = ft != null ? ' <span class="ecode-alt">~' + fmtAlt(ft) + ' ft</span>' : '';
+      return '<span class="ecode">' + c + '</span>' + altSpan;
+    }).join(", ");
+  }
+
   // ---- Autocomplete ----
   var input = document.getElementById("engine-input");
   var mfrSelect = document.getElementById("mfr-select");
@@ -2248,7 +2288,7 @@ if (!arrivedFiltered) {
     } else {
       matchesArea.innerHTML = '<div class="card-grid">' + matches.map(function (m) {
         var r = m.rocket;
-        var enginesLine = r.engines ? codesLine(r.engines) : ("no motors listed — original range " + r.impulse);
+        var enginesLine = r.engines ? codesLineWithAlt(r.engines, r) : ("no motors listed — original range " + r.impulse);
         return '<div class="rocket-card tier-' + m.tier + '">' +
           '<span class="tier-tag tier-' + m.tier + '">' + m.label + '</span>' +
           '<p class="rname">' + r.name + '</p>' +
@@ -2635,6 +2675,7 @@ draw(); table();
 
 </body></html>
 </body></html>
+
 <div id="__update-banner" style="display:none;position:fixed;left:0;right:0;bottom:0;z-index:99999;background:#101820;color:#e7eef5;font:600 14px/1.4 -apple-system,BlinkMacSystemFont,sans-serif;padding:12px 16px;padding-bottom:calc(12px + env(safe-area-inset-bottom,0px));align-items:center;justify-content:space-between;gap:12px;box-shadow:0 -2px 12px rgba(0,0,0,.4);">
   <span id="__update-msg">A newer version of Ignition Check is available.</span>
   <span id="__update-actions" style="display:flex;gap:8px;flex-shrink:0;">
@@ -2649,7 +2690,7 @@ draw(); table();
    Home Screen app a fresh, empty storage container). Only a page that really is the announced
    version is used, and the browser's stored copy is refreshed so the next launch opens it too. */
 (function () {
-  var CURRENT_VERSION = "26";
+  var CURRENT_VERSION = "27";
   var VERSION_KEY = "version";
   var banner = document.getElementById('__update-banner');
   var msg = document.getElementById('__update-msg');
