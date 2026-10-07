@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="27">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="28">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -575,7 +575,7 @@ body[data-view="swap"] { background: #f2f4f6; }
 #view-ignition .cato-clean { color: var(--good); font-weight: 700; }
 #view-ignition .card-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
     gap: 12px;
   }
 #view-ignition .rocket-card {
@@ -618,6 +618,17 @@ body[data-view="swap"] { background: #f2f4f6; }
 #view-ignition .tier-tag.tier-class::before { background: var(--accent2); }
 #view-ignition .tier-tag.tier-range { background: var(--surface-2); color: var(--ink-faint); font-style: italic; }
 #view-ignition .tier-tag.tier-range::before { background: var(--ink-faint); }
+#view-ignition .rocket-card .card-body {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 2px;
+  }
+#view-ignition .rocket-card .card-body .rmeta {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
 #view-ignition .rocket-card .rmeta {
     display: flex;
     flex-wrap: wrap;
@@ -627,7 +638,31 @@ body[data-view="swap"] { background: #f2f4f6; }
     color: var(--ink-dim);
   }
 #view-ignition .ecode { white-space: nowrap; }
-#view-ignition .ecode-alt { color: var(--ink-faint); font-style: italic; white-space: nowrap; }
+#view-ignition .ealt-table {
+    width: auto;
+    flex: 0 0 auto;
+    border-collapse: collapse;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+  }
+#view-ignition .ealt-table td {
+    padding: 1px 0 1px 10px;
+    white-space: nowrap;
+    color: var(--ink);
+  }
+#view-ignition .ealt-table td.ealt {
+    text-align: right;
+    color: var(--ink-faint);
+    font-style: italic;
+    padding-left: 8px;
+  }
+#view-ignition .ealt-empty {
+    flex: 1 1 auto;
+    margin: 0;
+    font-size: 0.76rem;
+    color: var(--ink-faint);
+    font-style: italic;
+  }
 #view-ignition .chip {
     display: inline-block;
     padding: 2px 9px;
@@ -2052,15 +2087,16 @@ if (!arrivedFiltered) {
     return r.toLocaleString("en-US");
   }
 
-  // Same as codesLine, but tags each recommended code with its own projected
-  // altitude for this rocket's weight (ideal, no drag — see estAltitudeFt).
-  function codesLineWithAlt(list, rocket) {
-    return list.map(function (c) {
+  // A compact two-column table (motor, projected altitude) for a rocket
+  // card's recommended-engines list — see estAltitudeFt for the formula.
+  function altTable(list, rocket) {
+    var rows = list.map(function (c) {
       var eng = engineLookup(c);
       var ft = eng ? estAltitudeFt(eng.impulseNs, rocket.weight) : null;
-      var altSpan = ft != null ? ' <span class="ecode-alt">~' + fmtAlt(ft) + ' ft</span>' : '';
-      return '<span class="ecode">' + c + '</span>' + altSpan;
-    }).join(", ");
+      var altCell = ft != null ? "~" + fmtAlt(ft) + " ft" : "—";
+      return '<tr><td class="ecode">' + c + '</td><td class="ealt">' + altCell + '</td></tr>';
+    }).join("");
+    return '<table class="ealt-table"><tbody>' + rows + '</tbody></table>';
   }
 
   // ---- Autocomplete ----
@@ -2288,17 +2324,17 @@ if (!arrivedFiltered) {
     } else {
       matchesArea.innerHTML = '<div class="card-grid">' + matches.map(function (m) {
         var r = m.rocket;
-        var enginesLine = r.engines ? codesLineWithAlt(r.engines, r) : ("no motors listed — original range " + r.impulse);
+        var enginesCol = r.engines ? altTable(r.engines, r) : ('<p class="ealt-empty">No motors listed &mdash; original range ' + r.impulse + '</p>');
         return '<div class="rocket-card tier-' + m.tier + '">' +
           '<span class="tier-tag tier-' + m.tier + '">' + m.label + '</span>' +
           '<p class="rname">' + r.name + '</p>' +
-          '<div class="rmeta">' +
-            '<span class="chip ' + skillClass(r.skill) + '">' + (r.skill || "Unspecified") + '</span>' +
-            '<span>' + fmt(r.diameter, 'mm') + '</span>' +
-            '<span>' + fmt(r.weight, 'g') + '</span>' +
-          '</div>' +
-          '<div class="rmeta" style="margin-top:6px;">' +
-            '<span>Recommended: ' + enginesLine + '</span>' +
+          '<div class="card-body">' +
+            '<div class="rmeta">' +
+              '<span class="chip ' + skillClass(r.skill) + '">' + (r.skill || "Unspecified") + '</span>' +
+              '<span>' + fmt(r.diameter, 'mm') + '</span>' +
+              '<span>' + fmt(r.weight, 'g') + '</span>' +
+            '</div>' +
+            enginesCol +
           '</div>' +
         '</div>';
       }).join("") + '</div>';
@@ -2690,7 +2726,7 @@ draw(); table();
    Home Screen app a fresh, empty storage container). Only a page that really is the announced
    version is used, and the browser's stored copy is refreshed so the next launch opens it too. */
 (function () {
-  var CURRENT_VERSION = "27";
+  var CURRENT_VERSION = "28";
   var VERSION_KEY = "version";
   var banner = document.getElementById('__update-banner');
   var msg = document.getElementById('__update-msg');
