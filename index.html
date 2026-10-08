@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="31">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="32">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2515,6 +2515,7 @@ if (!arrivedFiltered) {
   <div class="legend">
     <span><b>Match %</b> weighs total impulse (altitude) fully and average thrust (burn profile) at half weight. <b style="color:var(--good)">90+ Equivalent</b> · <b style="color:var(--good)">75–89 Close</b>, same class of flight, confirm delay · <b style="color:var(--warn)">60–74 Simulate first</b>, noticeably different altitude or burn · <b style="color:var(--bad)">&lt;60 Not a substitute</b>.</span>
     <span><b style="color:var(--good)">Drop-in</b> same diameter · <b style="color:var(--warn)">Adapter</b> smaller motor, needs a spacer/adapter · <b style="color:var(--bad)">Too wide</b> won't fit the mount.</span>
+    <span id="sw-wt-legend" hidden>Faded markers on the chart, and substitutes pushed to the bottom of the list, fall under 3:1 thrust-to-weight for the liftoff weight entered above &mdash; they're shown, not hidden, but they're not a safe pick as-is.</span>
   </div>
 
   <section class="tablebox">
@@ -2584,8 +2585,18 @@ const twCls=tw=>tw<3?"twbad":tw<5?"twwarn":"";
 const twTxt=tw=>tw<3?" — too weak":tw<5?" — marginal, long rod":"";
 const pct=d=>Math.max(0,Math.round(100*Math.exp(-d/0.6)));
 function fit(from,to){ if(to.dia===from.dia) return ["ok","Drop-in"]; if(to.dia<from.dia) return ["adapt","Adapter"]; return ["no","Too wide"]; }
-function matches(m,n=6){ return M.filter(o=>o.id!==m.id && (state.same||o.brand!==m.brand) && state.brands.has(o.brand) && state.dias.has(o.dia))
-  .map(o=>({o,d:dist(m,o)})).sort((a,b)=>a.d-b.d).slice(0,n); }
+// weighSafety is only true for the user's own selected motor (the side list
+// and chart highlighting) — with a liftoff weight set, a candidate under 3:1
+// thrust-to-weight for it sorts after every safe one, since a close match
+// that can't lift the rocket off the rod isn't a usable recommendation. It
+// stays false for the catalog-wide "best substitute for every motor" table,
+// where forcing in a merely-safe-for-the-selected-rocket pick would bury a
+// genuinely close match behind an unrelated, barely-matching one (e.g. a
+// 1/4A motor "substituted" by a C-class reload just because it clears 3:1
+// for a rocket that 1/4A was never going in).
+function matches(m,n=6,weighSafety=false){ const safe=o=>!weighSafety||!state.wt||twOf(o,state.wt)>=3;
+  return M.filter(o=>o.id!==m.id && (state.same||o.brand!==m.brand) && state.brands.has(o.brand) && state.dias.has(o.dia))
+  .map(o=>({o,d:dist(m,o)})).sort((a,b)=>(safe(b.o)-safe(a.o))||(a.d-b.d)).slice(0,n); }
 
 /* ---- chart ---- */
 const W=820,H=560,L=62,R=16,Tp=30,B=52;
@@ -2622,13 +2633,14 @@ function drawBase(){
 const tip=document.getElementById("sw-tip");
 function draw(){
   drawBase();
-  const sel=M[state.sel], ms=matches(sel), mset=new Set(ms.map(x=>x.o.id));
+  const sel=M[state.sel], ms=matches(sel,6,true), mset=new Set(ms.map(x=>x.o.id));
   const gl=el("g",{"clip-path":"url(#plot)"});
   ms.forEach(({o},i)=>el("line",{x1:sx(sel.I),y1:sy(sel.T),x2:sx(o.I),y2:sy(o.T),stroke:"var(--hl)","stroke-width":i?1.2:2.2,"stroke-opacity":i?.55:.95},gl));
   const vis=M.filter(m=>state.brands.has(m.brand)&&state.dias.has(m.dia));
   const g=el("g",{});
   vis.forEach(m=>{const on=m.id===state.sel||mset.has(m.id);
-    const s=shape(g,m,sx(m.I),sy(m.T),m.id===state.sel?7.5:5.2,{fill:m.oop?"var(--panel)":BCOL[m.brand],"fill-opacity":on?1:.72,stroke:m.id===state.sel?"var(--ink)":m.oop?BCOL[m.brand]:"var(--panel)","stroke-width":m.id===state.sel?2:m.oop?2:1,style:"cursor:pointer"});
+    const under=state.wt>0&&twOf(m,state.wt)<3;
+    const s=shape(g,m,sx(m.I),sy(m.T),m.id===state.sel?7.5:5.2,{fill:m.oop?"var(--panel)":BCOL[m.brand],"fill-opacity":under?.22:(on?1:.72),stroke:m.id===state.sel?"var(--ink)":m.oop?BCOL[m.brand]:"var(--panel)","stroke-width":m.id===state.sel?2:m.oop?2:1,style:"cursor:pointer"});
     s.addEventListener("click",()=>select(m.id));
     s.addEventListener("mousemove",e=>{tip.hidden=false;tip.textContent=`${m.brand} ${m.name} · ${m.dia}mm · ${m.I} Ns · ${m.T} N · ${m.t}s · ${m.type}${m.oop?' · OOP':''}`;tip.style.left=Math.min(e.clientX+12,innerWidth-300)+"px";tip.style.top=(e.clientY+12)+"px";});
     s.addEventListener("mouseleave",()=>tip.hidden=true);
@@ -2638,6 +2650,7 @@ function draw(){
     const x=sx(m.I),y=sy(m.T), right=x<W-110;
     el("text",{x:right?x+10:x-10,y:y-7,"text-anchor":right?"start":"end","font-size":i?11:13,"font-weight":i?500:700,style:`fill:var(--ink);paint-order:stroke;stroke:var(--panel);stroke-width:3px`}).textContent=m.name;});
   renderSide(sel,ms);
+  document.getElementById("sw-wt-legend").hidden=!state.wt;
 }
 function renderSide(sel,ms){
   const side=document.getElementById("sw-side");
@@ -2663,7 +2676,7 @@ const selEl=document.getElementById("sw-sel");
 BRANDS.forEach(b=>{const og=document.createElement("optgroup");og.label=b;
   M.filter(m=>m.brand===b).sort((a,c)=>a.I-c.I).forEach(m=>{const o=document.createElement("option");o.value=m.id;o.textContent=`${m.name}  (${m.dia}mm)${m.oop?' · OOP':''}`;og.appendChild(o);});selEl.appendChild(og);});
 selEl.value=state.sel; selEl.onchange=()=>select(+selEl.value);
-const wtEl=document.getElementById("sw-wt"); wtEl.oninput=()=>{state.wt=parseFloat(wtEl.value)||0;draw();};
+const wtEl=document.getElementById("sw-wt"); wtEl.oninput=()=>{state.wt=parseFloat(wtEl.value)||0;draw();table();};
 
 /* ---- rocket picker: fills the weight box from the fleet, then gets out of the
    way. The planner's weight is the airframe alone, so the box stays editable —
@@ -2679,7 +2692,7 @@ rkEl.onchange=()=>{
   const r=FLEET[+rkEl.value]; if(!r) return;
   wtEl.value=r.weight;                      // still fully editable afterwards
   state.wt=r.weight;
-  draw();
+  draw();table();
 };
 const sameEl=document.getElementById("sw-same"); sameEl.onclick=()=>{state.same=!state.same;sameEl.setAttribute("aria-pressed",state.same);draw();table();};
 
@@ -2753,7 +2766,7 @@ draw(); table();
    Home Screen app a fresh, empty storage container). Only a page that really is the announced
    version is used, and the browser's stored copy is refreshed so the next launch opens it too. */
 (function () {
-  var CURRENT_VERSION = "31";
+  var CURRENT_VERSION = "32";
   var VERSION_KEY = "version";
   var banner = document.getElementById('__update-banner');
   var msg = document.getElementById('__update-msg');
