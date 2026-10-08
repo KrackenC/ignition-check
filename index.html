@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="28">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="29">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2434,6 +2434,7 @@ if (!arrivedFiltered) {
 #view-swap input[type=number]{font:500 14px var(--mono);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px;width:7.5em}
 #view-swap .tier{font:600 11px var(--sans);text-transform:uppercase;letter-spacing:.05em;margin-left:6px}
 #view-swap .tier.t1{color:var(--good)}#view-swap .tier.t2{color:var(--good);opacity:.8}#view-swap .tier.t3{color:var(--warn)}#view-swap .tier.t4{color:var(--bad)}
+#view-swap .pct.t1{color:var(--good)}#view-swap .pct.t2{color:var(--good);opacity:.8}#view-swap .pct.t3{color:var(--warn)}#view-swap .pct.t4{color:var(--bad)}
 #view-swap .twbad{color:var(--bad);font-weight:600}#view-swap .twwarn{color:var(--warn);font-weight:600}
 #view-swap select{font:500 14px var(--mono);background:var(--panel);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px;max-width:100%}
 #view-swap .main{display:grid;grid-template-columns:minmax(0,1fr) 340px;gap:18px;align-items:start}
@@ -2617,8 +2618,8 @@ function renderSide(sel,ms){
   side.innerHTML=`<div class="pick"><span class="msub" style="color:${BCOL[sel.brand]};font-weight:600">${sel.brand} · ${cls(sel.I)} class · ${sel.type==="RMS"?"reload":"single-use"}${sel.oop?" · out of production":""}</span>
     <span class="name">${sel.name}</span><span class="spec">${sel.dia} mm · ${sel.I} N·s · ${sel.T} N avg · ${sel.t} s burn${state.wt?` · T/W <span class="${twCls(twOf(sel,state.wt))}">${twOf(sel,state.wt).toFixed(1)}:1${twTxt(twOf(sel,state.wt))}</span>`:""}</span></div>
     <h2 style="margin:4px 0 0">Closest substitutes</h2>
-    <ul class="mlist">${ms.map(({o,d})=>{const f=fit(sel,o);return `<li data-id="${o.id}"><span class="pct" style="color:${BCOL[o.brand]}">${pct(d)}%</span>
-      <span><span class="mname">${o.brand} ${o.name}</span><span class="fit ${f[0]}">${f[1]}</span><span class="tier ${tier(pct(d))[0]}">${tier(pct(d))[1]}</span><br><span class="msub">${state.wt?(()=>{const tw=twOf(o,state.wt);return `<span class="${twCls(tw)}">T/W ${tw.toFixed(1)}:1${twTxt(tw)}</span> · `})():""}${o.dia} mm · ${o.I} N·s · ${o.T} N · ${o.t} s${o.type==="RMS"?" · reload":""}${o.oop?" · OOP":""} · ${dI(sel,o)}</span></span></li>`}).join("")||'<li class="note">Nothing visible — turn a brand or diameter back on.</li>'}</ul>
+    <ul class="mlist">${ms.map(({o,d})=>{const f=fit(sel,o),p=pct(d),t=tier(p);return `<li data-id="${o.id}"><span class="pct ${t[0]}">${p}%</span>
+      <span><span class="mname">${o.brand} ${o.name}</span><span class="fit ${f[0]}">${f[1]}</span><span class="tier ${t[0]}">${t[1]}</span><br><span class="msub">${state.wt?(()=>{const tw=twOf(o,state.wt);return `<span class="${twCls(tw)}">T/W ${tw.toFixed(1)}:1${twTxt(tw)}</span> · `})():""}${o.dia} mm · ${o.I} N·s · ${o.T} N · ${o.t} s${o.type==="RMS"?" · reload":""}${o.oop?" · OOP":""} · ${dI(sel,o)}</span></span></li>`}).join("")||'<li class="note">Nothing visible — turn a brand or diameter back on.</li>'}</ul>
     <p class="note"><b>No % makes a swap safe on its own.</b> Whatever the score, don't fly a substitute that's too wide or long for the mount, exceeds the kit's max recommended motor, lifts off under 3:1 average thrust-to-weight (3–5:1 needs a long rod and a calm day; 5:1+ is comfortable)${state.wt?"":" — enter liftoff weight above to check"}, or has no delay near your current one.</p>`;
   side.querySelectorAll("li[data-id]").forEach(li=>li.addEventListener("click",()=>select(+li.dataset.id)));
 }
@@ -2726,7 +2727,7 @@ draw(); table();
    Home Screen app a fresh, empty storage container). Only a page that really is the announced
    version is used, and the browser's stored copy is refreshed so the next launch opens it too. */
 (function () {
-  var CURRENT_VERSION = "28";
+  var CURRENT_VERSION = "29";
   var VERSION_KEY = "version";
   var banner = document.getElementById('__update-banner');
   var msg = document.getElementById('__update-msg');
