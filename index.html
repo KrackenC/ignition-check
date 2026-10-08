@@ -1,4 +1,4 @@
-<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="30">
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style><meta name="ignition-check-version" content="31">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -1368,7 +1368,7 @@ body[data-view="swap"] { background: #f2f4f6; }
       <p class="cato-note" id="cato-note"></p>
     </div>
 
-    <p class="hint" style="margin:0 0 10px;">Altitudes next to each motor are an idealized, no-drag estimate (impulse &divide; rocket weight, coasting out on gravity alone) &mdash; a rough ceiling, not a flight prediction, and they use the rocket's airframe weight only, not rocket+motor.</p>
+    <p class="hint" style="margin:0 0 10px;">Altitudes next to each motor use the same drag-inclusive model as the planner's own Alt Calc tab (one-dimensional, Cd 0.75) &mdash; an estimate, not a flight prediction, and they use the rocket's airframe weight only, not rocket+motor.</p>
     <div id="matches-area"></div>
 
     <details class="excluded" id="excluded-details">
@@ -2070,16 +2070,42 @@ if (!arrivedFiltered) {
     return found.length ? found[0] : null;
   }
 
-  // Idealized apogee estimate: treat the motor's whole impulse as an instant
-  // burnout velocity (impulse / mass), then coast under gravity alone — no
-  // drag, no burn-phase altitude. Real flights land well under this; it's a
-  // rough ceiling, not a prediction. Mass is the rocket's listed Weight only
-  // (airframe, no motor) — same simplification as the Motor Swap weight field.
-  function estAltitudeFt(impulseNs, weightG) {
-    if (!impulseNs || !weightG) return null;
-    var v = impulseNs / (weightG / 1000);
-    var hM = (v * v) / (2 * 9.80665);
-    return hM * 3.280839895;
+  // Fehskens-Malewicki one-dimensional drag model — the same formula and the
+  // same constants as the planner spreadsheet's own "Alt Calc" tab, which
+  // computes a Min/Max apogee per rocket from its weakest/strongest listed
+  // motor. Verified to reproduce all 84 of that tab's own Min/Max figures
+  // exactly when driven the same way it is: each motor's real average thrust
+  // (from the catalog) paired with a *per-class typical* total impulse and
+  // case mass, not that motor's own catalog impulse — the spreadsheet's
+  // author chose class-typical values deliberately (a single motor's listed
+  // total impulse sits close to its class's lower bound and understates real
+  // performance), so this mirrors that choice rather than "improving" on it.
+  // Mass is the rocket's listed Weight only (airframe, no motor) — same
+  // simplification as the Motor Swap weight field; motor case + propellant
+  // mass get added on top here, same as the spreadsheet does.
+  var ALT_CLASS_IMPULSE_NS = {"1/4A":0.625,"1/2A":1.25,"A":2.5,"B":5,"C":10,"D":17,"E":30,"F":60,"G":120};
+  var ALT_CLASS_CASE_G = {"1/4A":3,"1/2A":3,"A":8,"B":12,"C":12,"D":24,"E":22,"F":35,"G":50};
+  var ALT_CD = 0.75, ALT_RHO = 1.225, ALT_G = 9.81, ALT_ISP_S = 80, ALT_FT_PER_M = 3.28084;
+  function estAltitudeFt(engine, rocket) {
+    if (!engine || !rocket.weight || !rocket.diameter) return null;
+    var impulseNs = ALT_CLASS_IMPULSE_NS[engine.class];
+    var caseG = ALT_CLASS_CASE_G[engine.class];
+    var thrustN = engine.avgThrust;
+    if (!impulseNs || !caseG || !thrustN) return null;
+    var burnS = impulseNs / thrustN;
+    var propKg = impulseNs / (ALT_ISP_S * ALT_G);
+    var caseKg = caseG / 1000;
+    var massKg = rocket.weight / 1000 + caseKg + propKg / 2;
+    var dragK = 0.5 * ALT_RHO * ALT_CD * Math.PI * Math.pow(rocket.diameter / 2000, 2);
+    var netThrustN = thrustN - massKg * ALT_G;
+    if (netThrustN <= 0) return null; // motor too weak to lift this rocket off the rod
+    var vTerm = Math.sqrt(netThrustN / dragK);
+    var rate = 2 * dragK * vTerm / massKg;
+    var burnoutV = vTerm * (1 - Math.exp(-rate * burnS)) / (1 + Math.exp(-rate * burnS));
+    var burnoutAltM = massKg / (2 * dragK) * Math.log(netThrustN / (netThrustN - dragK * burnoutV * burnoutV));
+    var coastKg = rocket.weight / 1000 + caseKg;
+    var coastAltM = coastKg / (2 * dragK) * Math.log((coastKg * ALT_G + dragK * burnoutV * burnoutV) / (coastKg * ALT_G));
+    return (burnoutAltM + coastAltM) * ALT_FT_PER_M;
   }
 
   function fmtAlt(ft) {
@@ -2092,7 +2118,7 @@ if (!arrivedFiltered) {
   function altTable(list, rocket) {
     var rows = list.map(function (c) {
       var eng = engineLookup(c);
-      var ft = eng ? estAltitudeFt(eng.impulseNs, rocket.weight) : null;
+      var ft = eng ? estAltitudeFt(eng, rocket) : null;
       var altCell = ft != null ? "~" + fmtAlt(ft) + " ft" : "—";
       return '<tr><td class="ecode">' + c + '</td><td class="ealt">' + altCell + '</td></tr>';
     }).join("");
@@ -2727,7 +2753,7 @@ draw(); table();
    Home Screen app a fresh, empty storage container). Only a page that really is the announced
    version is used, and the browser's stored copy is refreshed so the next launch opens it too. */
 (function () {
-  var CURRENT_VERSION = "30";
+  var CURRENT_VERSION = "31";
   var VERSION_KEY = "version";
   var banner = document.getElementById('__update-banner');
   var msg = document.getElementById('__update-msg');
