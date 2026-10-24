@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
-<meta name="ignition-check-version" content="34">
+<meta name="ignition-check-version" content="35">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -965,9 +965,9 @@ body[data-view="swap"] { background: #f2f4f6; }
   padding: 0.6rem 0.7rem;
   box-shadow: 0 2px 12px var(--shadow);
 }
+#view-ledger .q-field { position: relative; flex: 1 1 15rem; min-width: 0; }
 #view-ledger #q {
-  flex: 1 1 15rem;
-  min-width: 0;
+  width: 100%;
   font-family: var(--f-data);
   font-size: 0.88rem;
   color: var(--ink);
@@ -977,9 +977,7 @@ body[data-view="swap"] { background: #f2f4f6; }
   padding: 0.45rem 0.6rem;
 }
 #view-ledger #q::placeholder { color: var(--faint); }
-#view-ledger .mfr-field { position: relative; flex: 0 1 12rem; min-width: 9rem; }
-#view-ledger #mfr {
-  width: 100%;
+#view-ledger select {
   font-family: var(--f-body);
   font-size: 0.85rem;
   color: var(--ink);
@@ -988,8 +986,7 @@ body[data-view="swap"] { background: #f2f4f6; }
   border-radius: 2px;
   padding: 0.45rem 0.5rem;
 }
-#view-ledger #mfr::placeholder { color: var(--faint); }
-#view-ledger .mfr-suggestions {
+#view-ledger .q-suggestions {
   position: absolute;
   top: calc(100% + 4px);
   left: 0; right: 0;
@@ -997,20 +994,25 @@ body[data-view="swap"] { background: #f2f4f6; }
   border: 1px solid var(--border-2);
   border-radius: 2px;
   box-shadow: 0 2px 12px var(--shadow);
-  max-height: 220px;
+  max-height: 260px;
   overflow-y: auto;
   z-index: 20;
   display: none;
 }
-#view-ledger .mfr-suggestions.open { display: block; }
-#view-ledger .mfr-option {
+#view-ledger .q-suggestions.open { display: block; }
+#view-ledger .q-option {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.6rem;
   padding: 0.45rem 0.6rem;
   cursor: pointer;
-  font-size: 0.85rem;
   border-bottom: 1px solid var(--border);
 }
-#view-ledger .mfr-option:last-child { border-bottom: none; }
-#view-ledger .mfr-option:hover, #view-ledger .mfr-option.active { background: var(--accent-wash); }
+#view-ledger .q-option:last-child { border-bottom: none; }
+#view-ledger .q-option:hover, #view-ledger .q-option.active { background: var(--accent-wash); }
+#view-ledger .q-option .code { font-family: var(--f-data); font-size: 0.85rem; color: var(--ink); font-weight: 700; }
+#view-ledger .q-option .meta { color: var(--muted); font-size: 0.78rem; white-space: nowrap; }
 #view-ledger .chips { display: flex; gap: 0.25rem; flex-wrap: wrap; }
 #view-ledger .chip {
   font-family: var(--f-data);
@@ -1045,7 +1047,7 @@ body[data-view="swap"] { background: #f2f4f6; }
   white-space: nowrap;
   margin-left: auto;
 }
-#view-ledger :is(#q, #mfr, #view-ledger .chip, #view-ledger .toggle input):focus-visible {
+#view-ledger :is(#q, #view-ledger select, #view-ledger .chip, #view-ledger .toggle input):focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
@@ -1464,12 +1466,12 @@ Every rocket, its recommended motors, and the Engine Catalog below come from the
   </header>
 
   <div class="controls">
-    <input id="q" type="text" placeholder="Search engine, manufacturer, failure mode, or lot code&hellip;" autocomplete="off" aria-label="Search engines and lot codes">
-    <div class="chips" id="chips" role="group" aria-label="Filter by impulse class"></div>
-    <div class="mfr-field" id="mfr-field">
-      <input id="mfr" type="text" autocomplete="off" placeholder="All manufacturers" aria-label="Filter by manufacturer" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="mfr-suggestions">
-      <div class="mfr-suggestions" id="mfr-suggestions" role="listbox"></div>
+    <div class="q-field" id="q-field">
+      <input id="q" type="text" placeholder="Search engine, manufacturer, failure mode, or lot code&hellip;" autocomplete="off" aria-label="Search engines and lot codes" role="combobox" aria-expanded="false" aria-autocomplete="list" aria-controls="q-suggestions">
+      <div class="q-suggestions" id="q-suggestions" role="listbox"></div>
     </div>
+    <div class="chips" id="chips" role="group" aria-label="Filter by impulse class"></div>
+    <select id="mfr" aria-label="Filter by manufacturer"><option value="">All manufacturers</option></select>
     <label class="toggle"><input type="checkbox" id="only"> Reports only</label>
     <span id="count"></span>
   </div>
@@ -1517,8 +1519,8 @@ const out = document.getElementById("out");
 const empty = document.getElementById("empty");
 const countEl = document.getElementById("count");
 const qEl = document.getElementById("q");
+const qSuggestionsEl = document.getElementById("q-suggestions");
 const mfrEl = document.getElementById("mfr");
-const mfrSuggestionsEl = document.getElementById("mfr-suggestions");
 const onlyEl = document.getElementById("only");
 const chipsEl = document.getElementById("chips");
 
@@ -1541,73 +1543,85 @@ CLASS_ORDER.forEach(c => {
   chipsEl.appendChild(b);
 });
 
-// Manufacturer field — a typeahead (like the Fleet Check engine lookup)
-// instead of a plain <select>: typing filters the table live (same as #q)
-// and also narrows the suggestion list below, which is just a shortcut for
-// filling in a full manufacturer name without typing all of it.
-const MFRS = [...new Set(DATA.map(d => d.mfr))].sort();
-let mfrSuggestions = [];
-let mfrActiveIdx = -1;
+[...new Set(DATA.map(d => d.mfr))].sort().forEach(m => {
+  const o = document.createElement("option");
+  o.value = m;
+  o.textContent = m;
+  mfrEl.appendChild(o);
+});
 
-function renderMfrSuggestions(query) {
+// Engine search box — a typeahead (like the Fleet Check engine lookup):
+// typing already filters the table live, and this adds a suggestion list
+// of matching engine codes so one can be picked without typing it in full.
+let qSuggestions = [];
+let qActiveIdx = -1;
+
+function filteredEngineSuggestions(query) {
   const q = query.trim().toLowerCase();
-  mfrSuggestions = q ? MFRS.filter(m => m.toLowerCase().includes(q)) : MFRS;
-  mfrActiveIdx = -1;
-  if (!mfrSuggestions.length) {
-    mfrSuggestionsEl.classList.remove("open");
-    mfrSuggestionsEl.innerHTML = "";
-    mfrEl.setAttribute("aria-expanded", "false");
+  if (!q) return [];
+  return DATA.filter(d => d.code.toLowerCase().includes(q) || d.cls.toLowerCase() === q).slice(0, 12);
+}
+function renderQSuggestions(query) {
+  qSuggestions = filteredEngineSuggestions(query);
+  qActiveIdx = -1;
+  if (!qSuggestions.length) {
+    qSuggestionsEl.classList.remove("open");
+    qSuggestionsEl.innerHTML = "";
+    qEl.setAttribute("aria-expanded", "false");
     return;
   }
-  mfrSuggestionsEl.innerHTML = mfrSuggestions.map((m, i) =>
-    `<div class="mfr-option" role="option" data-idx="${i}">${esc(m)}</div>`).join("");
-  mfrSuggestionsEl.classList.add("open");
-  mfrEl.setAttribute("aria-expanded", "true");
+  qSuggestionsEl.innerHTML = qSuggestions.map((d, i) =>
+    `<div class="q-option" role="option" data-idx="${i}"><span class="code">${esc(d.code)}</span><span class="meta">${esc(d.mfr)} &middot; Class ${esc(d.cls)}</span></div>`).join("");
+  qSuggestionsEl.classList.add("open");
+  qEl.setAttribute("aria-expanded", "true");
 }
-function pickMfr(m) {
-  mfrEl.value = m;
-  mfrSuggestionsEl.classList.remove("open");
-  mfrEl.setAttribute("aria-expanded", "false");
-  mfrEl.focus();
+function pickQSuggestion(d) {
+  qEl.value = d.code;
+  qSuggestionsEl.classList.remove("open");
+  qEl.setAttribute("aria-expanded", "false");
+  qEl.focus();
   render();
 }
-function highlightMfr() {
-  Array.from(mfrSuggestionsEl.children).forEach((el, i) => {
-    const on = i === mfrActiveIdx;
+function highlightQ() {
+  Array.from(qSuggestionsEl.children).forEach((el, i) => {
+    const on = i === qActiveIdx;
     el.classList.toggle("active", on);
     if (on) el.scrollIntoView({ block: "nearest" });
   });
 }
-mfrEl.addEventListener("focus", () => renderMfrSuggestions(mfrEl.value));
-mfrEl.addEventListener("click", () => {
-  if (!mfrSuggestionsEl.classList.contains("open")) renderMfrSuggestions(mfrEl.value);
+qEl.addEventListener("focus", () => renderQSuggestions(qEl.value));
+qEl.addEventListener("click", () => {
+  if (!qSuggestionsEl.classList.contains("open")) renderQSuggestions(qEl.value);
 });
-mfrSuggestionsEl.addEventListener("click", evt => {
-  const row = evt.target.closest(".mfr-option");
-  if (row) pickMfr(mfrSuggestions[+row.dataset.idx]);
+qSuggestionsEl.addEventListener("click", evt => {
+  const row = evt.target.closest(".q-option");
+  if (row) pickQSuggestion(qSuggestions[+row.dataset.idx]);
 });
-mfrEl.addEventListener("keydown", evt => {
-  if (!mfrSuggestionsEl.classList.contains("open")) return;
+qEl.addEventListener("keydown", evt => {
+  if (!qSuggestionsEl.classList.contains("open")) return;
   if (evt.key === "ArrowDown") {
     evt.preventDefault();
-    mfrActiveIdx = Math.min(mfrActiveIdx + 1, mfrSuggestions.length - 1);
-    highlightMfr();
+    qActiveIdx = Math.min(qActiveIdx + 1, qSuggestions.length - 1);
+    highlightQ();
   } else if (evt.key === "ArrowUp") {
     evt.preventDefault();
-    mfrActiveIdx = Math.max(mfrActiveIdx - 1, 0);
-    highlightMfr();
+    qActiveIdx = Math.max(qActiveIdx - 1, 0);
+    highlightQ();
   } else if (evt.key === "Enter") {
-    evt.preventDefault();
-    if (mfrActiveIdx >= 0) pickMfr(mfrSuggestions[mfrActiveIdx]);
-    else mfrSuggestionsEl.classList.remove("open");
+    if (qActiveIdx >= 0) {
+      evt.preventDefault();
+      pickQSuggestion(qSuggestions[qActiveIdx]);
+    } else {
+      qSuggestionsEl.classList.remove("open");
+    }
   } else if (evt.key === "Escape") {
-    mfrSuggestionsEl.classList.remove("open");
+    qSuggestionsEl.classList.remove("open");
   }
 });
 document.addEventListener("click", evt => {
-  if (!mfrSuggestionsEl.contains(evt.target) && evt.target !== mfrEl) {
-    mfrSuggestionsEl.classList.remove("open");
-    mfrEl.setAttribute("aria-expanded", "false");
+  if (!qSuggestionsEl.contains(evt.target) && evt.target !== qEl) {
+    qSuggestionsEl.classList.remove("open");
+    qEl.setAttribute("aria-expanded", "false");
   }
 });
 
@@ -1787,7 +1801,7 @@ function render() {
   const q = rawQEl.toLowerCase();
   const qk = lotKey(rawQEl);
   const qd = normDesig(rawQEl);
-  const mfr = mfrEl.value.trim().toLowerCase();
+  const mfr = mfrEl.value;
   const only = onlyEl.checked;
 
   // Searching a lot code opens the engines citing it, so the match is visible
@@ -1811,7 +1825,7 @@ function render() {
     (!q ||
       (d.code + " " + d.mfr + " " + d.cn + " " + d.mode).toLowerCase().includes(q) ||
       lotMatches(d, qk)) &&
-    (!mfr || d.mfr.toLowerCase().includes(mfr)) &&
+    (!mfr || d.mfr === mfr) &&
     (!activeClass || d.cls === activeClass) &&
     (!only || d.n > 0));
 
@@ -1880,8 +1894,8 @@ function render() {
   empty.style.display = rows.length ? "none" : "block";
 }
 
-qEl.addEventListener("input", render);
-mfrEl.addEventListener("input", () => { renderMfrSuggestions(mfrEl.value); render(); });
+qEl.addEventListener("input", () => { renderQSuggestions(qEl.value); render(); });
+mfrEl.addEventListener("change", render);
 onlyEl.addEventListener("change", render);
 
 // Arriving from Ignition Check should land on that motor already filtered. The
@@ -2871,7 +2885,7 @@ draw(); table();
    Home Screen app a fresh, empty storage container). Only a page that really is the announced
    version is used, and the browser's stored copy is refreshed so the next launch opens it too. */
 (function () {
-  var CURRENT_VERSION = "34";
+  var CURRENT_VERSION = "35";
   var VERSION_KEY = "version";
   var banner = document.getElementById('__update-banner');
   var msg = document.getElementById('__update-msg');
