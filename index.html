@@ -1,5 +1,5 @@
 <!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1"><style>:root{color-scheme:light}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style>
-<meta name="ignition-check-version" content="38">
+<meta name="ignition-check-version" content="39">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
 <link rel="icon" href="favicon.png" type="image/png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -2497,7 +2497,7 @@ if (!arrivedFiltered) {
   document.getElementById("engine-count").textContent = "(" + ENGINES.length + " motors)";
 
   var rocketBody = document.getElementById("rocket-table-body");
-  ROCKETS.forEach(function (r) {
+  ROCKETS.slice().sort(function (a, b) { return a.name.localeCompare(b.name); }).forEach(function (r) {
     var tr = document.createElement("tr");
     var enginesLine = r.engines ? codesLine(r.engines) : ("— (impulse only: " + (r.impulse || "—") + ")");
     var srcLabel = r.source === "spreadsheet" ? "From spreadsheet" : "Impulse only";
@@ -2885,7 +2885,7 @@ draw(); table();
    Home Screen app a fresh, empty storage container). Only a page that really is the announced
    version is used, and the browser's stored copy is refreshed so the next launch opens it too. */
 (function () {
-  var CURRENT_VERSION = "38";
+  var CURRENT_VERSION = "39";
   var VERSION_KEY = "version";
   var banner = document.getElementById('__update-banner');
   var msg = document.getElementById('__update-msg');
